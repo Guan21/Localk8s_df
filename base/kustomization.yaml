@@ -1,0 +1,19 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: dify
+
+resources:
+  - namespace.yaml
+  - secret/db-secret.yaml
+  - secret/redis-secret.yaml
+  - configmap/shared-config.yaml
+  - storage/persistent-volume-claims.yaml
+  - deployments/db.yaml
+  - deployments/redis.yaml
+  - deployments/api.yaml
+  - deployments/worker.yaml
+  - deployments/web.yaml
+  - deployments/sandbox.yaml
+  - deployments/ssrf-proxy.yaml
+  - deployments/weaviate.yaml

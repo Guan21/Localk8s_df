@@ -1,0 +1,68 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: dify
+
+resources:
+  - ../../base
+
+# ローカル環境用のパッチ
+patches:
+  # サービスタイプをNodePortに変更（ローカル環境でのアクセス用）
+  - target:
+      kind: Service
+      name: web-svc
+    patch: |-
+      - op: replace
+        path: /spec/type
+        value: NodePort
+      - op: add
+        path: /spec/ports/0/nodePort
+        value: 30080
+  - target:
+      kind: Service
+      name: api-svc
+    patch: |-
+      - op: replace
+        path: /spec/type
+        value: NodePort
+      - op: add
+        path: /spec/ports/0/nodePort
+        value: 30081
+
+  # リソース制限を調整（ローカル環境用に軽量化）
+  - target:
+      kind: Deployment
+      name: api
+    patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/memory
+        value: 256Mi
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/memory
+        value: 512Mi
+
+  # 永続ボリュームの要求を調整
+  - target:
+      kind: PersistentVolumeClaim
+      name: postgres-data
+    patch: |-
+      - op: replace
+        path: /spec/resources/requests/storage
+        value: 1Gi
+
+configMapGenerator:
+  - name: local-config
+    literals:
+      - DEPLOY_ENV=development
+      - DEBUG=true
+
+# コンフィグマップの参照更新
+vars:
+  - name: ENVIRONMENT
+    objref:
+      kind: ConfigMap
+      name: local-config
+      apiVersion: v1
+    fieldref:
+      fieldpath: data.DEPLOY_ENV

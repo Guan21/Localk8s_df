@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: worker
+  namespace: dify
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: worker
+  template:
+    metadata:
+      labels:
+        app: worker
+    spec:
+      containers:
+      - name: worker
+        image: langgenius/dify-api:0.12.1
+        env:
+        - name: MODE
+          value: "worker"
+        envFrom:
+        - configMapRef:
+            name: shared-config
+        - secretRef:
+            name: db-secret
+        - secretRef:
+            name: redis-secret
+        volumeMounts:
+        - name: app-storage
+          mountPath: /app/api/storage
+        resources:
+          requests:
+            cpu: "200m"
+            memory: "512Mi"
+          limits:
+            cpu: "500m"
+            memory: "1Gi"
+        livenessProbe:
+          exec:
+            command:
+            - /bin/sh
+            - -c
+            - celery -A app.celery inspect ping -d celery@$HOSTNAME
+          initialDelaySeconds: 30
+          periodSeconds: 30
+          timeoutSeconds: 10
+        readinessProbe:
+          exec:
+            command:
+            - /bin/sh
+            - -c
+            - celery -A app.celery inspect ping -d celery@$HOSTNAME
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          timeoutSeconds: 5
+      volumes:
+      - name: app-storage
+        persistentVolumeClaim:
+          claimName: app-storage
