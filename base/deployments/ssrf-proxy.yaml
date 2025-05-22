@@ -6,13 +6,30 @@ metadata:
 data:
   squid.conf: |
     http_port 3128
-    acl SSL_ports port 443
+    
+    # Define safe ports
+    acl Safe_ports port 80          # http
+    acl Safe_ports port 443         # https
+    acl Safe_ports port 21          # ftp
+    acl SSL_ports port 443          # https
+    
+    # Define request methods
     acl CONNECT method CONNECT
+    
+    # Access controls
     http_access allow localhost
-    http_access deny !Safe_ports
-    http_access deny CONNECT !SSL_ports
-    http_access allow all
+    http_access deny !Safe_ports    # deny access to non-safe ports
+    http_access deny CONNECT !SSL_ports  # deny CONNECT to non-SSL ports
+    
+    # Only allow specific methods and ports to external services
+    acl allowed_domains dstdomain .openai.com .dify.ai
+    http_access allow allowed_domains
+    http_access deny all  # deny everything else
+    
+    # Basic settings
     coredump_dir /var/spool/squid
+    cache_mem 256 MB
+    maximum_object_size 32 MB
 ---
 apiVersion: v1
 kind: Service
@@ -44,7 +61,10 @@ spec:
     spec:
       containers:
       - name: ssrf-proxy
-        image: ubuntu/squid:latest
+        image: ubuntu/squid:5.2-22.04_beta
+        securityContext:
+          runAsUser: 13
+          fsGroup: 13
         ports:
         - containerPort: 3128
         env:
@@ -56,17 +76,19 @@ spec:
         - name: squid-config
           mountPath: /etc/squid/squid.conf
           subPath: squid.conf
+        - name: squid-cache
+          mountPath: /var/spool/squid
         resources:
           requests:
-            cpu: "100m"
-            memory: "128Mi"
-          limits:
             cpu: "200m"
             memory: "256Mi"
+          limits:
+            cpu: "500m"
+            memory: "512Mi"
         livenessProbe:
           tcpSocket:
             port: 3128
-          initialDelaySeconds: 30
+          initialDelaySeconds: 60
           periodSeconds: 10
           timeoutSeconds: 5
         readinessProbe:
@@ -79,3 +101,5 @@ spec:
       - name: squid-config
         configMap:
           name: squid-config
+      - name: squid-cache
+        emptyDir: {}

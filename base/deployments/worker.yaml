@@ -42,7 +42,7 @@ spec:
             - /bin/sh
             - -c
             - celery -A app.celery inspect ping -d celery@$HOSTNAME
-          initialDelaySeconds: 30
+          initialDelaySeconds: 180
           periodSeconds: 30
           timeoutSeconds: 10
         readinessProbe:
@@ -51,7 +51,7 @@ spec:
             - /bin/sh
             - -c
             - celery -A app.celery inspect ping -d celery@$HOSTNAME
-          initialDelaySeconds: 5
+          initialDelaySeconds: 60
           periodSeconds: 10
           timeoutSeconds: 5
       volumes:
