@@ -1,91 +1,75 @@
-# Dify Kubernetes Deployment
+# Dify on AKS
 
-このディレクトリには、DifyアプリケーションのKubernetes用デプロイメント設定が含まれています。
-
-## ディレクトリ構造
-
-```
-kubernetes/
-├── base/                     # ベース設定
-│   ├── configmap/           # 共有設定
-│   ├── secret/              # 機密情報
-│   ├── storage/             # ストレージ設定
-│   └── deployments/         # アプリケーションデプロイメント
-└── overlays/                # 環境別設定
-    └── local/               # ローカル環境用設定
-```
-
-## 前提条件
-
-- Kubernetes クラスター（Docker Desktop Kubernetes または Minikube）
+## Prerequisites
+- Azure CLI
 - kubectl
-- kustomize
+- Azure Subscription
 
-## デプロイ手順
+## Setup Steps
 
-1. ネームスペースの作成
+1. Create Azure Container Registry (ACR)
 ```bash
-kubectl apply -f base/namespace.yaml
+# Create ACR
+az acr create --resource-group dify-rg --name difyacr --sku Basic --location japaneast
+
+# Import required images to ACR
+az acr import --name difyacr --source docker.io/langgenius/dify-api:1.3.1 --image dify-api:1.3.1
+az acr import --name difyacr --source docker.io/langgenius/dify-web:1.3.1 --image dify-web:1.3.1
+az acr import --name difyacr --source docker.io/langgenius/dify-plugin-daemon:0.0.9-local --image dify-plugin-daemon:0.0.9-local
+az acr import --name difyacr --source docker.io/library/postgres:15-alpine --image postgres:15-alpine
+az acr import --name difyacr --source docker.io/library/redis:6-alpine --image redis:6-alpine
+az acr import --name difyacr --source docker.io/library/busybox:latest --image busybox:latest
+az acr import --name difyacr --source docker.io/langgenius/dify-sandbox:0.2.11 --image dify-sandbox:0.2.11
+az acr import --name difyacr --source docker.io/ubuntu/squid:latest --image ubuntu/squid:latest
+az acr import --name difyacr --source docker.io/semitechnologies/weaviate:1.19.0 --image semitechnologies/weaviate:1.19.0
 ```
 
-2. ローカル環境へのデプロイ
+2. Create AKS Cluster
 ```bash
-kubectl apply -k overlays/local
+# Create Resource Group
+az group create --name dify-rg --location japaneast
+
+# Create AKS Cluster
+az aks create \
+  --resource-group dify-rg \
+  --name dify-aks \
+  --node-count 1 \
+  --node-vm-size Standard_D8s_v3 \
+  --location japaneast
+
+# Get Credentials
+az aks get-credentials --resource-group dify-rg --name dify-aks
+
+# Attach ACR to AKS
+az aks update -n dify-aks -g dify-rg --attach-acr difyacr
 ```
 
-3. デプロイの確認
+3. Deploy Application
 ```bash
-# Podの状態確認
+# Deploy using Azure overlay
+kubectl apply -k overlays/azure
+
+# Check deployment status
 kubectl get pods -n dify
 
-# サービスの確認
+# Get service external IPs
 kubectl get services -n dify
 ```
 
-## アクセス方法
+4. Access the Application
+- Web UI: `http://<web-svc-external-ip>`
+- API: `http://<api-svc-external-ip>:5001`
 
-デプロイが完了すると、以下のURLでアクセスできます：
-
-- Web UI: http://localhost:30080
-- API: http://localhost:30081
-
-## トラブルシューティング
-
-1. Podのログ確認
+## Cleanup
 ```bash
-kubectl logs -n dify <pod-name>
-```
+# Delete AKS Resources
+kubectl delete -k overlays/azure
 
-2. Podの詳細確認
-```bash
-kubectl describe pod -n dify <pod-name>
-```
+# Delete AKS Cluster
+az aks delete --resource-group dify-rg --name dify-aks
 
-3. 全リソースの状態確認
-```bash
-kubectl get all -n dify
-```
+# Delete ACR
+az acr delete --name difyacr --resource-group dify-rg
 
-## クリーンアップ
-
-環境を削除する場合は以下のコマンドを実行：
-
-```bash
-kubectl delete -k kubernetes/overlays/local
-```
-
-## 注意事項
-
-- ローカル環境ではNodePortを使用してサービスを公開
-- 永続データは`PersistentVolumeClaim`を使用して保存
-- 本番環境での使用時は、適切なストレージクラスとリソース制限の設定が必要
-
-
-## ユーザー切り替え
-```
-# 通常ユーザーとして
-kubectl config use-context infuraDify-dev-aks
-
-# 管理者として
-kubectl config use-context infuraDify-dev-aks-admin
-```
+# Delete Resource Group
+az group delete --name dify-rg
