@@ -7,6 +7,7 @@ resources:
   - namespace.yaml
   - secret/db-secret.yaml
   - secret/redis-secret.yaml
+  - secret/model-provider-secret.yaml
   - configmap/shared-config.yaml
   - storage/persistent-volume-claims.yaml
   - deployments/db.yaml
@@ -17,3 +18,5 @@ resources:
   - deployments/sandbox.yaml
   - deployments/ssrf-proxy.yaml
   - deployments/weaviate.yaml
+  - deployments/plugin-daemon.yaml
+  - secret/plugin-daemon-secret.yaml
