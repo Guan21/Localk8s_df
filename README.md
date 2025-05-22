@@ -25,12 +25,12 @@ kubernetes/
 
 1. ネームスペースの作成
 ```bash
-kubectl apply -f kubernetes/base/namespace.yaml
+kubectl apply -f base/namespace.yaml
 ```
 
 2. ローカル環境へのデプロイ
 ```bash
-kubectl apply -k kubernetes/overlays/local
+kubectl apply -k overlays/local
 ```
 
 3. デプロイの確認
@@ -79,3 +79,13 @@ kubectl delete -k kubernetes/overlays/local
 - ローカル環境ではNodePortを使用してサービスを公開
 - 永続データは`PersistentVolumeClaim`を使用して保存
 - 本番環境での使用時は、適切なストレージクラスとリソース制限の設定が必要
+
+
+## ユーザー切り替え
+```
+# 通常ユーザーとして
+kubectl config use-context infuraDify-dev-aks
+
+# 管理者として
+kubectl config use-context infuraDify-dev-aks-admin
+```
