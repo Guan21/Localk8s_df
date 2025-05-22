@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: shared-config
+  namespace: dify
+data:
+  # プロキシ設定
+  HTTP_PROXY: "http://ssrf-proxy-svc:3128"
+  HTTPS_PROXY: "http://ssrf-proxy-svc:3128"
+  NO_PROXY: "localhost,127.0.0.1,redis-svc,postgres-svc,weaviate-svc"
+
+  # サービスURL
+  APP_WEB_URL: "http://localhost:30080"
+  CONSOLE_API_URL: "http://localhost:30081"
+  SERVICE_API_URL: "http://localhost:30081"
+
+  # 既存の設定を維持しながら、必要な更新のみ行う
+  DEBUG: "false"
+  FLASK_DEBUG: "false"
+  DEPLOY_ENV: "production"

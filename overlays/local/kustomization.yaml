@@ -6,31 +6,13 @@ namespace: dify
 resources:
   - ../../base
 
-# ローカル環境用のパッチ
-patches:
-  # サービスタイプをNodePortに変更（ローカル環境でのアクセス用）
-  - target:
-      kind: Service
-      name: web-svc
-    patch: |-
-      - op: replace
-        path: /spec/type
-        value: NodePort
-      - op: add
-        path: /spec/ports/0/nodePort
-        value: 30080
-  - target:
-      kind: Service
-      name: api-svc
-    patch: |-
-      - op: replace
-        path: /spec/type
-        value: NodePort
-      - op: add
-        path: /spec/ports/0/nodePort
-        value: 30081
+patchesStrategicMerge:
+  - ssrf-proxy-nodeport.yaml
+  - service-type.yaml
+  - configmap-patch.yaml
 
-  # リソース制限を調整（ローカル環境用に軽量化）
+# リソース制限を調整（ローカル環境用に軽量化）
+patches:
   - target:
       kind: Deployment
       name: api
@@ -57,7 +39,6 @@ configMapGenerator:
       - DEPLOY_ENV=development
       - DEBUG=true
 
-# コンフィグマップの参照更新
 vars:
   - name: ENVIRONMENT
     objref:
