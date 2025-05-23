@@ -10,3 +10,6 @@ patchesStrategicMerge:
   - web-service-patch.yaml
   - api-service-patch.yaml
   - image-patch.yaml
+  - storage-patch.yaml
+  - api-init-patch.yaml
+  - configmap-patch.yaml

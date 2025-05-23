@@ -1,0 +1,27 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "clusterName": {
+            "value": "dify-arm64-aks"
+        },
+        "acrName": {
+            "value": "difyaksacr"
+        },
+        "location": {
+            "value": "japaneast"
+        },
+        "nodeVMSize": {
+            "value": "Standard_D8ps_v5"
+        },
+        "nodeCount": {
+            "value": 1
+        },
+        "kubernetesVersion": {
+            "value": "1.32.4"
+        },
+        "deployAcr": {
+            "value": false
+        }
+    }
+}

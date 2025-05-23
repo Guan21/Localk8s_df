@@ -4,9 +4,12 @@ metadata:
   name: web-svc
   namespace: dify
 spec:
+  $patch: replace
   type: LoadBalancer
+  selector:
+    app: web
   ports:
     - name: http
+      protocol: TCP
       port: 80
       targetPort: 3000
-      protocol: TCP
