@@ -30,6 +30,8 @@ spec:
               key: REDIS_PASSWORD
         - name: CELERY_BROKER_URL
           value: "redis://:$(REDIS_PASSWORD)@redis-svc:6379/1"
+        - name: CELERY_CONCURRENCY
+          value: "4"
         envFrom:
         - configMapRef:
             name: shared-config
@@ -38,12 +40,23 @@ spec:
           mountPath: /app/api/storage
         resources:
           requests:
-            cpu: "200m"
-            memory: "1Gi"
-          limits:
             cpu: "500m"
             memory: "2Gi"
+          limits:
+            cpu: "1000m"
+            memory: "4Gi"
         livenessProbe:
+          exec:
+            command:
+            - /bin/sh
+            - -c
+            - celery -A app.celery inspect ping -d celery@$HOSTNAME
+          initialDelaySeconds: 180
+          periodSeconds: 90
+          timeoutSeconds: 60
+          failureThreshold: 8
+          successThreshold: 1
+        readinessProbe:
           exec:
             command:
             - /bin/sh
@@ -51,18 +64,9 @@ spec:
             - celery -A app.celery inspect ping -d celery@$HOSTNAME
           initialDelaySeconds: 120
           periodSeconds: 60
-          timeoutSeconds: 30
-          failureThreshold: 5
-        readinessProbe:
-          exec:
-            command:
-            - /bin/sh
-            - -c
-            - celery -A app.celery inspect ping -d celery@$HOSTNAME
-          initialDelaySeconds: 60
-          periodSeconds: 30
-          timeoutSeconds: 30
-          failureThreshold: 5
+          timeoutSeconds: 60
+          failureThreshold: 8
+          successThreshold: 1
       volumes:
       - name: app-storage
         persistentVolumeClaim:
