@@ -1,0 +1,43 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: squid-config
+  namespace: dify
+data:
+  squid.conf: |
+    # Port configuration
+    http_port 3128
+
+    # Basic ACLs
+    acl localnet src all
+    acl k8s_domain dst 10.0.0.0/8
+    acl k8s_ports port 80 443 5001
+    acl api_host dstdomain api-svc
+    acl api_host dstdomain api-svc.dify.svc.cluster.local
+
+    # Access rules
+    http_access allow localnet api_host
+    http_access allow localnet k8s_domain
+    http_access allow localnet k8s_ports
+    http_access deny all
+
+    # Parent proxy settings
+    cache_peer api-svc.dify.svc.cluster.local parent 5001 0 no-query proxy-only no-digest name=api connection-auth=off
+
+    # Routing settings
+    never_direct allow api_host
+    cache deny all
+
+    # DNS settings
+    dns_nameservers 10.0.0.10
+    dns_timeout 5 seconds
+
+    # Connection settings
+    connect_timeout 5 seconds
+    read_timeout 5 minutes
+    request_timeout 5 minutes
+
+    # Logging
+    cache_log stdio:/var/log/squid/cache.log
+    access_log stdio:/var/log/squid/access.log combined
+    debug_options ALL,1

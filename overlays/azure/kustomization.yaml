@@ -13,3 +13,8 @@ patchesStrategicMerge:
   - storage-patch.yaml
   - api-init-patch.yaml
   - configmap-patch.yaml
+  - ssrf-proxy-config-patch.yaml
+  - worker-patch.yaml
+  - security-context-patch.yaml
+  - api-deployment-patch.yaml
+  - init-security-patch.yaml

@@ -4,11 +4,14 @@ metadata:
   name: shared-config
   namespace: dify
 data:
-  CONSOLE_API_URL: http://130.33.188.55:5001
-  SERVICE_API_URL: http://130.33.188.55:5001
-  APP_WEB_URL: http://48.218.157.165
-  CONSOLE_CORS_ALLOW_ORIGINS: http://48.218.157.165,*
-  WEB_API_CORS_ALLOW_ORIGINS: http://48.218.157.165,*
+  CONSOLE_API_URL: http://api-svc:5001
+  SERVICE_API_URL: http://api-svc:5001
+  APP_WEB_URL: http://web-svc
   API_URL: http://api-svc:5001
-  API_PREFIX: http://130.33.188.55:5001/console/api
-  SERVICE_API_PREFIX: http://130.33.188.55:5001/api
+  API_PREFIX: http://api-svc:5001/console/api
+  SERVICE_API_PREFIX: http://api-svc:5001/api
+  CONSOLE_CORS_ALLOW_ORIGINS: "*"
+  WEB_API_CORS_ALLOW_ORIGINS: "*"
+  HTTP_PROXY: http://ssrf-proxy-svc:3128
+  HTTPS_PROXY: http://ssrf-proxy-svc:3128
+  NO_PROXY: "localhost,127.0.0.1,.svc.cluster.local,10.0.0.0/8"

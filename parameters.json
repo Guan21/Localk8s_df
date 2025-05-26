@@ -3,7 +3,7 @@
     "contentVersion": "1.0.0.0",
     "parameters": {
         "clusterName": {
-            "value": "dify-arm64-aks"
+            "value": "dify-arm64-aks-ssrf"
         },
         "acrName": {
             "value": "difyaksacr"
