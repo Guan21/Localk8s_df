@@ -8,7 +8,10 @@ resources:
   - secret/db-secret.yaml
   - secret/redis-secret.yaml
   - secret/model-provider-secret.yaml
+  - secret/mail-secret.yaml
   - configmap/shared-config.yaml
+  - configmap/postgres-init.yaml
+  - configmap/sandbox-config.yaml
   - storage/persistent-volume-claims.yaml
   - deployments/db.yaml
   - deployments/redis.yaml

@@ -4,12 +4,25 @@ metadata:
   name: shared-config
   namespace: dify
 data:
+  # サービス基本設定
   DEPLOY_ENV: "PRODUCTION"
+  SERVER_WORKER_AMOUNT: "1"
+  SERVER_WORKER_CLASS: "gevent"
+  SERVER_WORKER_CONNECTIONS: "10"
+  # ログ設定
+  LOG_LEVEL: "DEBUG"
+  LOG_FILE: "/app/logs/server.log"
+  LOG_FILE_MAX_SIZE: "20"
+  LOG_FILE_BACKUP_COUNT: "5"
+  LOG_DATEFORMAT: "%Y-%m-%d %H:%M:%S"
+  LOG_TZ: "UTC"
+  
+  # デバッグ設定
   DEBUG: "false"
   FLASK_DEBUG: "false"
   CONSOLE_API_URL: "http://localhost:30081"
   SERVICE_API_URL: "http://localhost:30081"
-  APP_WEB_URL: "http://localhost:30080"
+  APP_WEB_URL: "http://web-svc:3000"
   CHECK_UPDATE_URL: "https://updates.dify.ai"
   OPENAI_API_BASE: "https://api.openai.com/v1"
   FILES_URL: ""
@@ -23,8 +36,8 @@ data:
   DB_HOST: "postgres-svc"
   DB_PORT: "5432"
   DB_DATABASE: "dify"
-  WEB_API_CORS_ALLOW_ORIGINS: "http://localhost:30080,http://127.0.0.1:3000,*"
-  CONSOLE_CORS_ALLOW_ORIGINS: "http://localhost:30080,http://127.0.0.1:3000,*"
+  WEB_API_CORS_ALLOW_ORIGINS: "*"
+  CONSOLE_CORS_ALLOW_ORIGINS: "*"
   CORS_ALLOW_CREDENTIALS: "true"
   CORS_ALLOW_METHODS: "GET,POST,PUT,DELETE,OPTIONS"
   CORS_ALLOW_HEADERS: "Content-Type,Authorization,X-Requested-With"
@@ -38,9 +51,30 @@ data:
   REDIS_PORT: "6379"
   REDIS_DB: "0"
   REDIS_USE_SSL: "false"
+  # セキュリティ設定
   ACCESS_TOKEN_EXPIRE_MINUTES: "60"
+  REFRESH_TOKEN_EXPIRE_DAYS: "30"
+  
+  # アプリケーション制限
+  APP_MAX_EXECUTION_TIME: "1200"
+  FILES_ACCESS_TIMEOUT: "300"
+  # ストレージとブローカー設定
   BROKER_USE_SSL: "false"
   STORAGE_TYPE: "local"
+  
+  # メール設定
+  MAIL_TYPE: "resend"
+  RESEND_API_URL: "https://api.resend.com"
+  SMTP_SERVER: ""
+  SMTP_USERNAME: ""
+  SMTP_PASSWORD: ""
+  MAIL_DEFAULT_SEND_FROM: "no-reply@yourdomain.com"
+  SMTP_PORT: "465"
+  SMTP_USE_TLS: "true"
+  SMTP_OPPORTUNISTIC_TLS: "false"
+  
+  # プラグイン関連
+  PLUGIN_MAX_PACKAGE_SIZE: "52428800"
   STORAGE_LOCAL_PATH: "storage"
   VECTOR_STORE: "weaviate"
   WEAVIATE_ENDPOINT: "http://weaviate-svc:8080"
@@ -50,6 +84,11 @@ data:
   PLUGIN_DAEMON_PORT: "5002"
   PLUGIN_DAEMON_URL: "http://plugin-daemon-svc:5002"
   PLUGIN_DAEMON_MANAGER_ENABLED: "true"
+  PLUGIN_DEBUGGING_HOST: "localhost"
+  EXPOSE_PLUGIN_DEBUGGING_HOST: "localhost"
+  PLUGIN_INSTALLING_DIR: "/app/storage/plugin"
+  PLUGIN_REMOTE_SERVER_HOST: "plugin-daemon-svc"
+  PLUGIN_REMOTE_SERVER_PORT: "5002"
   PLUGIN_DB_USERNAME: "postgres"
   PLUGIN_DB_PASSWORD: "difyai123456"
   PLUGIN_DB_HOST: "postgres-svc"
@@ -57,3 +96,37 @@ data:
   PLUGIN_DB_DATABASE: "dify_plugin"
   PLUGIN_REDIS_HOST: "redis-svc"
   PLUGIN_REDIS_PORT: "6379"
+
+  # Redis設定
+  REDIS_USE_SENTINEL: "false"
+  REDIS_SENTINEL_SOCKET_TIMEOUT: "0.1"
+  REDIS_USE_CLUSTERS: "false"
+
+  # Celery設定
+  CELERY_AUTO_SCALE: "true"
+  CELERY_USE_SENTINEL: "false"
+  CELERY_SENTINEL_SOCKET_TIMEOUT: "0.1"
+  CELERY_MAX_WORKERS: "3"
+  CELERY_MIN_WORKERS: "2"
+
+  # エラー監視設定
+  API_SENTRY_TRACES_SAMPLE_RATE: "1.0"
+  API_SENTRY_PROFILES_SAMPLE_RATE: "1.0"
+
+  # Web関連設定
+  MARKETPLACE_API_URL: "https://marketplace.dify.ai"
+  MARKETPLACE_URL: "https://marketplace.dify.ai"
+  PM2_INSTANCES: "2"
+  ALLOW_EMBED: "false"
+  TEXT_GENERATION_TIMEOUT_MS: "60000"
+
+  # Web機能制限
+  LOOP_NODE_MAX_COUNT: "100"
+  MAX_TOOLS_NUM: "10"
+  MAX_PARALLEL_LIMIT: "10"
+  MAX_ITERATIONS_NUM: "5"
+
+  # Web機能フラグ
+  ENABLE_WEBSITE_JINAREADER: "true"
+  ENABLE_WEBSITE_FIRECRAWL: "true"
+  ENABLE_WEBSITE_WATERCRAWL: "true"

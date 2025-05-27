@@ -26,50 +26,97 @@ spec:
       labels:
         app: sandbox
     spec:
+      initContainers:
+      - name: init-sandbox
+        image: busybox
+        command: ['sh', '-c', 'mkdir -p /app/conf /app/logs /var/sandbox/sandbox-nodejs /var/sandbox/sandbox-python /dependencies && echo "requests==2.31.0" >> /dependencies/python-requirements.txt && echo "PyYAML==6.0.1" >> /dependencies/python-requirements.txt && cp /conf-init/config.yaml /app/conf/ && chown -R 1000:1000 /dependencies /app /var/sandbox']
+        volumeMounts:
+        - name: config
+          mountPath: /conf-init
+        - name: shared-volumes
+          mountPath: /dependencies
+        - name: shared-volumes
+          mountPath: /app
+        - name: shared-volumes
+          mountPath: /var/sandbox
+      securityContext:
+        fsGroup: 1000
       containers:
       - name: sandbox
         image: langgenius/dify-sandbox:0.2.11
+        securityContext:
+          runAsUser: 1000
+        workingDir: /app
         ports:
         - containerPort: 8194
         env:
         - name: API_KEY
           value: "dify-sandbox"
+        - name: SANDBOX_API_KEY
+          value: "dify-sandbox"
         - name: GIN_MODE
           value: "release"
         - name: WORKER_TIMEOUT
           value: "15"
+        - name: SANDBOX_WORKER_TIMEOUT
+          value: "15"
         - name: ENABLE_NETWORK
+          value: "true"
+        - name: SANDBOX_ENABLE_NETWORK
           value: "true"
         - name: HTTP_PROXY
           value: "http://ssrf-proxy-svc:3128"
         - name: HTTPS_PROXY
           value: "http://ssrf-proxy-svc:3128"
+        - name: SANDBOX_HTTP_PROXY
+          value: "http://ssrf-proxy-svc:3128"
+        - name: SANDBOX_HTTPS_PROXY
+          value: "http://ssrf-proxy-svc:3128"
+        - name: PORT
+          value: "8194"
         - name: SANDBOX_PORT
           value: "8194"
+        - name: LOG_FILE
+          value: "/app/logs/server.log"
+        - name: LOG_DIR
+          value: "/app/logs"
+        - name: CONFIG_FILE
+          value: "/app/conf/config.yaml"
         volumeMounts:
-        - name: dependencies
+        - name: shared-volumes
           mountPath: /dependencies
+        - name: shared-volumes
+          mountPath: /app
+        - name: shared-volumes
+          mountPath: /var/sandbox
         resources:
           requests:
-            cpu: "100m"
-            memory: "256Mi"
-          limits:
             cpu: "200m"
             memory: "512Mi"
+          limits:
+            cpu: "500m"
+            memory: "1Gi"
         livenessProbe:
           httpGet:
             path: /health
             port: 8194
-          initialDelaySeconds: 30
-          periodSeconds: 10
-          timeoutSeconds: 5
+          initialDelaySeconds: 60
+          periodSeconds: 15
+          timeoutSeconds: 10
         readinessProbe:
           httpGet:
             path: /health
             port: 8194
-          initialDelaySeconds: 5
-          periodSeconds: 10
-          timeoutSeconds: 5
+          initialDelaySeconds: 30
+          periodSeconds: 15
+          timeoutSeconds: 10
       volumes:
-      - name: dependencies
-        emptyDir: {}
+      - name: shared-volumes
+        persistentVolumeClaim:
+          claimName: sandbox-dependencies
+      - name: config
+        configMap:
+          name: sandbox-config
+          items:
+          - key: config.yaml
+            path: config.yaml

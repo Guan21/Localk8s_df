@@ -14,11 +14,27 @@ spec:
         app: worker
     spec:
       initContainers:
-      - name: wait-for-postgres
+      - name: init-dirs
         image: busybox
-        command: ['sh', '-c', 'until nc -z postgres-svc 5432; do echo waiting for postgres; sleep 2; done']
+        command: ['sh', '-c', 'mkdir -p /app/logs && chown -R 1000:1000 /app/logs']
+        volumeMounts:
+        - name: log-dir
+          mountPath: /app/logs
+      - name: wait-for-postgres
+        image: postgres:15-alpine
+        env:
+        - name: PGUSER
+          value: "postgres"
+        - name: PGPASSWORD
+          value: "difyai123456"
+        command: ['sh', '-c', 'until pg_isready -h postgres-svc -p 5432 -t 60; do echo waiting for postgres; sleep 2; done']
+      securityContext:
+        fsGroup: 1000
       containers:
       - name: worker
+        securityContext:
+          runAsUser: 1000
+          runAsGroup: 1000
         image: langgenius/dify-api:1.3.1
         env:
         - name: MODE
@@ -30,19 +46,32 @@ spec:
               key: REDIS_PASSWORD
         - name: CELERY_BROKER_URL
           value: "redis://:$(REDIS_PASSWORD)@redis-svc:6379/1"
+        - name: RESEND_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: mail-secret
+              key: RESEND_API_KEY
+        - name: LOG_LEVEL
+          value: "DEBUG"
         envFrom:
         - configMapRef:
             name: shared-config
+        - secretRef:
+            name: model-provider-secret
+        - secretRef:
+            name: mail-secret
         volumeMounts:
         - name: app-storage
           mountPath: /app/api/storage
+        - name: log-dir
+          mountPath: /app/logs
         resources:
           requests:
-            cpu: "200m"
-            memory: "1Gi"
-          limits:
             cpu: "500m"
             memory: "2Gi"
+          limits:
+            cpu: "1000m"
+            memory: "4Gi"
         livenessProbe:
           exec:
             command:
@@ -51,19 +80,21 @@ spec:
             - celery -A app.celery inspect ping -d celery@$HOSTNAME
           initialDelaySeconds: 120
           periodSeconds: 60
-          timeoutSeconds: 30
-          failureThreshold: 5
+          timeoutSeconds: 45
+          failureThreshold: 3
         readinessProbe:
           exec:
             command:
             - /bin/sh
             - -c
             - celery -A app.celery inspect ping -d celery@$HOSTNAME
-          initialDelaySeconds: 60
-          periodSeconds: 30
-          timeoutSeconds: 30
-          failureThreshold: 5
+          initialDelaySeconds: 120
+          periodSeconds: 60
+          timeoutSeconds: 45
+          failureThreshold: 3
       volumes:
       - name: app-storage
         persistentVolumeClaim:
           claimName: app-storage
+      - name: log-dir
+        emptyDir: {}
