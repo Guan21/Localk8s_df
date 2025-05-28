@@ -1,0 +1,110 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api
+  namespace: dify
+spec:
+  template:
+    spec:
+      initContainers:
+      - name: wait-for-postgres
+        image: difyaksacr.azurecr.io/busybox:latest
+      containers:
+      - name: api
+        image: difyaksacr.azurecr.io/dify-api:1.3.1
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web
+  namespace: dify
+spec:
+  template:
+    spec:
+      containers:
+      - name: web
+        image: difyaksacr.azurecr.io/dify-web:1.3.1
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: plugin-daemon
+  namespace: dify
+spec:
+  template:
+    spec:
+      containers:
+      - name: plugin-daemon
+        image: difyaksacr.azurecr.io/dify-plugin-daemon:0.0.9-local
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgres
+  namespace: dify
+spec:
+  template:
+    spec:
+      containers:
+      - name: postgres
+        image: difyaksacr.azurecr.io/postgres:15-alpine
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: redis
+  namespace: dify
+spec:
+  template:
+    spec:
+      containers:
+      - name: redis
+        image: difyaksacr.azurecr.io/redis:6-alpine
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sandbox
+  namespace: dify
+spec:
+  template:
+    spec:
+      containers:
+      - name: sandbox
+        image: difyaksacr.azurecr.io/dify-sandbox:0.2.11
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ssrf-proxy
+  namespace: dify
+spec:
+  template:
+    spec:
+      containers:
+      - name: ssrf-proxy
+        image: difyaksacr.azurecr.io/ubuntu/squid:latest
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: weaviate
+  namespace: dify
+spec:
+  template:
+    spec:
+      containers:
+      - name: weaviate
+        image: difyaksacr.azurecr.io/semitechnologies/weaviate:1.19.0
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: worker
+  namespace: dify
+spec:
+  template:
+    spec:
+      containers:
+      - name: worker
+        image: difyaksacr.azurecr.io/dify-api:1.3.1

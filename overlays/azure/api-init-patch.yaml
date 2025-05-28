@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api
+  namespace: dify
+spec:
+  template:
+    spec:
+      initContainers:
+      - name: wait-for-postgres
+        image: alpine:3.18
+        command: 
+        - sh 
+        - -c 
+        - >
+          apk add --no-cache netcat-openbsd &&
+          until nc -z postgres-svc 5432; do
+            echo "waiting for postgres...";
+            sleep 2;
+          done
