@@ -38,6 +38,14 @@ spec:
             secretKeyRef:
               name: redis-secret
               key: REDIS_PASSWORD
+        - name: REDIS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: redis-secret
+              key: REDIS_PASSWORD
+        envFrom:
+        - configMapRef:
+            name: shared-config
         args:
           - redis-server
           - --requirepass

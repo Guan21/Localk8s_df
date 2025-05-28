@@ -57,10 +57,47 @@ spec:
         ports:
         - containerPort: 3128
         env:
+        # プロキシサーバー設定
         - name: HTTP_PORT
           value: "3128"
         - name: COREDUMP_DIR
           value: "/var/spool/squid"
+        
+        # リバースプロキシ設定
+        - name: REVERSE_PROXY_PORT
+          value: "8194"
+        - name: SANDBOX_HOST
+          value: "sandbox"
+        - name: SANDBOX_PORT
+          value: "8194"
+
+        # タイムアウト設定
+        - name: DEFAULT_TIME_OUT
+          value: "5"
+        - name: DEFAULT_CONNECT_TIME_OUT
+          value: "5"
+        - name: DEFAULT_READ_TIME_OUT
+          value: "5"
+        - name: DEFAULT_WRITE_TIME_OUT
+          value: "5"
+
+        # SSRF_接頭辞付き設定
+        - name: SSRF_HTTP_PORT
+          value: "3128"
+        - name: SSRF_COREDUMP_DIR
+          value: "/var/spool/squid"
+        - name: SSRF_REVERSE_PROXY_PORT
+          value: "8194"
+        - name: SSRF_SANDBOX_HOST
+          value: "sandbox"
+        - name: SSRF_DEFAULT_TIME_OUT
+          value: "5"
+        - name: SSRF_DEFAULT_CONNECT_TIME_OUT
+          value: "5"
+        - name: SSRF_DEFAULT_READ_TIME_OUT
+          value: "5"
+        - name: SSRF_DEFAULT_WRITE_TIME_OUT
+          value: "5"
         volumeMounts:
         - name: squid-config
           mountPath: /etc/squid/squid.conf

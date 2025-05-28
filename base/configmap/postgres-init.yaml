@@ -1,0 +1,31 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-init-script
+  namespace: dify
+data:
+  init.sql: |
+    -- Create databases
+    CREATE DATABASE dify;
+    CREATE DATABASE dify_plugin;
+
+    -- Create postgres user if not exists and grant privileges
+    DO $$
+    BEGIN
+      IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = 'postgres') THEN
+        CREATE USER postgres WITH PASSWORD 'difyai123456';
+      END IF;
+    END
+    $$;
+
+    -- Grant privileges
+    GRANT ALL PRIVILEGES ON DATABASE dify TO postgres;
+    GRANT ALL PRIVILEGES ON DATABASE dify_plugin TO postgres;
+
+    -- Connect to dify database and set owner
+    \c dify
+    ALTER DATABASE dify OWNER TO postgres;
+
+    -- Connect to dify_plugin database and set owner
+    \c dify_plugin
+    ALTER DATABASE dify_plugin OWNER TO postgres;

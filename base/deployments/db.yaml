@@ -33,17 +33,34 @@ spec:
         ports:
         - containerPort: 5432
         env:
+        # 基本設定
         - name: POSTGRES_USER
           value: "postgres"
         - name: POSTGRES_PASSWORD
           value: "difyai123456"
         - name: POSTGRES_DB
-          value: "dify"
+          value: "postgres"
         - name: PGDATA
           value: "/var/lib/postgresql/data/pgdata"
+        # パフォーマンスチューニング設定
+        - name: POSTGRES_MAX_CONNECTIONS
+          value: "100"
+        - name: POSTGRES_SHARED_BUFFERS
+          value: "128MB"
+        - name: POSTGRES_WORK_MEM
+          value: "4MB"
+        - name: POSTGRES_MAINTENANCE_WORK_MEM
+          value: "64MB"
+        - name: POSTGRES_EFFECTIVE_CACHE_SIZE
+          value: "4096MB"
+        # 認証設定
+        - name: POSTGRES_HOST_AUTH_METHOD
+          value: "trust"
         volumeMounts:
         - name: postgres-data
           mountPath: /var/lib/postgresql/data
+        - name: init-script
+          mountPath: /docker-entrypoint-initdb.d
         resources:
           requests:
             cpu: "200m"
@@ -69,3 +86,6 @@ spec:
       - name: postgres-data
         persistentVolumeClaim:
           claimName: postgres-data
+      - name: init-script
+        configMap:
+          name: postgres-init-script

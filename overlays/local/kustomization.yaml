@@ -58,11 +58,14 @@ configMapGenerator:
       - DEBUG=true
 
 # コンフィグマップの参照更新
-vars:
-  - name: ENVIRONMENT
-    objref:
+replacements:
+  - source:
       kind: ConfigMap
       name: local-config
-      apiVersion: v1
-    fieldref:
-      fieldpath: data.DEPLOY_ENV
+      fieldPath: data.DEPLOY_ENV
+    targets:
+      - select:
+          kind: ConfigMap
+          name: shared-config
+        fieldPaths:
+          - data.DEPLOY_ENV

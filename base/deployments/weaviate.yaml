@@ -33,26 +33,57 @@ spec:
         ports:
         - containerPort: 8080
         env:
+        # データストレージ設定
         - name: PERSISTENCE_DATA_PATH
           value: "/var/lib/weaviate"
+        - name: WEAVIATE_PERSISTENCE_DATA_PATH
+          value: "/var/lib/weaviate"
+
+        # クエリ設定
         - name: QUERY_DEFAULTS_LIMIT
           value: "25"
+        - name: WEAVIATE_QUERY_DEFAULTS_LIMIT
+          value: "25"
+
+        # 認証設定
         - name: AUTHENTICATION_ANONYMOUS_ACCESS_ENABLED
           value: "false"
-        - name: DEFAULT_VECTORIZER_MODULE
-          value: "none"
-        - name: CLUSTER_HOSTNAME
-          value: "node1"
+        - name: WEAVIATE_AUTHENTICATION_ANONYMOUS_ACCESS_ENABLED
+          value: "false"
         - name: AUTHENTICATION_APIKEY_ENABLED
+          value: "true"
+        - name: WEAVIATE_AUTHENTICATION_APIKEY_ENABLED
           value: "true"
         - name: AUTHENTICATION_APIKEY_ALLOWED_KEYS
           value: "WVF5YThaHlkYwhGUSmCRgsX3tD5ngdN8pkih"
+        - name: WEAVIATE_AUTHENTICATION_APIKEY_ALLOWED_KEYS
+          value: "WVF5YThaHlkYwhGUSmCRgsX3tD5ngdN8pkih"
         - name: AUTHENTICATION_APIKEY_USERS
           value: "hello@dify.ai"
+        - name: WEAVIATE_AUTHENTICATION_APIKEY_USERS
+          value: "hello@dify.ai"
+
+        # 認可設定
         - name: AUTHORIZATION_ADMINLIST_ENABLED
+          value: "true"
+        - name: WEAVIATE_AUTHORIZATION_ADMINLIST_ENABLED
           value: "true"
         - name: AUTHORIZATION_ADMINLIST_USERS
           value: "hello@dify.ai"
+        - name: WEAVIATE_AUTHORIZATION_ADMINLIST_USERS
+          value: "hello@dify.ai"
+
+        # ベクトル化設定
+        - name: DEFAULT_VECTORIZER_MODULE
+          value: "none"
+        - name: WEAVIATE_DEFAULT_VECTORIZER_MODULE
+          value: "none"
+
+        # クラスター設定
+        - name: CLUSTER_HOSTNAME
+          value: "node1"
+        - name: WEAVIATE_CLUSTER_HOSTNAME
+          value: "node1"
         volumeMounts:
         - name: weaviate-data
           mountPath: /var/lib/weaviate

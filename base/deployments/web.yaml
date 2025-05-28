@@ -28,8 +28,23 @@ spec:
       labels:
         app: web
     spec:
+      initContainers:
+      - name: init-dirs
+        image: busybox
+        command: ['sh', '-c', 'mkdir -p /app/logs && chown -R 1000:1000 /app/logs']
+        securityContext:
+          runAsUser: 0
+        volumeMounts:
+        - name: log-dir
+          mountPath: /app/logs
       containers:
       - name: web
+        securityContext:
+          runAsUser: 1000
+          runAsGroup: 1000
+        volumeMounts:
+        - name: log-dir
+          mountPath: /app/logs
         image: langgenius/dify-web:1.3.1
         ports:
         - containerPort: 3000
@@ -43,6 +58,9 @@ spec:
           value: "http://api-svc:5001"
         - name: NEXT_TELEMETRY_DISABLED
           value: "1"
+        envFrom:
+        - configMapRef:
+            name: shared-config
         resources:
           requests:
             cpu: "100m"
@@ -64,3 +82,6 @@ spec:
           initialDelaySeconds: 5
           periodSeconds: 10
           timeoutSeconds: 5
+      volumes:
+      - name: log-dir
+        emptyDir: {}
