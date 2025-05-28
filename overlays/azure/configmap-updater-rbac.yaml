@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: configmap-updater
+  namespace: dify
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: configmap-updater
+  namespace: dify
+rules:
+- apiGroups: [""]
+  resources: ["configmaps", "services"]
+  verbs: ["get", "patch", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: configmap-updater
+  namespace: dify
+subjects:
+- kind: ServiceAccount
+  name: configmap-updater
+  namespace: dify
+roleRef:
+  kind: Role
+  name: configmap-updater
+  apiGroup: rbac.authorization.k8s.io

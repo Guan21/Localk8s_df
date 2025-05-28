@@ -5,6 +5,8 @@ namespace: dify
 
 resources:
   - ../../base
+  - init-configmap-job.yaml
+  - configmap-updater-rbac.yaml
 
 patchesStrategicMerge:
   - web-service-patch.yaml

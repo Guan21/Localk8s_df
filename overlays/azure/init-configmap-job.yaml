@@ -1,0 +1,43 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: init-configmap
+  namespace: dify
+spec:
+  template:
+    spec:
+      serviceAccountName: configmap-updater
+      containers:
+      - name: configmap-updater
+        image: bitnami/kubectl
+        command:
+        - /bin/bash
+        - -c
+        - |
+          # Wait for LoadBalancer IPs to be assigned
+          echo "Waiting for LoadBalancer IPs..."
+          while [[ -z $(kubectl get svc api-svc -n dify -o jsonpath='{.status.loadBalancer.ingress[0].ip}') || -z $(kubectl get svc web-svc -n dify -o jsonpath='{.status.loadBalancer.ingress[0].ip}') ]]; do
+            sleep 10
+          done
+
+          # Get Service IPs
+          API_IP=$(kubectl get svc api-svc -n dify -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+          WEB_IP=$(kubectl get svc web-svc -n dify -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+          
+          echo "API IP: $API_IP"
+          echo "WEB IP: $WEB_IP"
+          
+          # Update ConfigMap
+          kubectl patch configmap shared-config -n dify --type=merge -p "{\"data\":{
+            \"CONSOLE_API_URL\": \"http://$API_IP:5001\",
+            \"SERVICE_API_URL\": \"http://$API_IP:5001\",
+            \"APP_WEB_URL\": \"http://$WEB_IP\",
+            \"CONSOLE_CORS_ALLOW_ORIGINS\": \"http://$WEB_IP,*\",
+            \"WEB_API_CORS_ALLOW_ORIGINS\": \"http://$WEB_IP,*\",
+            \"API_URL\": \"http://api-svc:5001\",
+            \"API_PREFIX\": \"http://$API_IP:5001/console/api\",
+            \"SERVICE_API_PREFIX\": \"http://$API_IP:5001/api\"
+          }}"
+          
+          echo "ConfigMap updated successfully"
+      restartPolicy: OnFailure
