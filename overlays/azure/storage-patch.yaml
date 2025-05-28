@@ -5,3 +5,11 @@ metadata:
   namespace: dify
 spec:
   storageClassName: azurefile-csi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: sandbox-conf
+  namespace: dify
+spec:
+  storageClassName: azurefile-csi
